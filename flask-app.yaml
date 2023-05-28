@@ -1,0 +1,44 @@
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: "flask-app"
+  namespace: "default"
+  labels:
+    app: "flask-app"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: "flask-app"
+  template:
+    metadata:
+      labels:
+        app: "flask-app"
+    spec:
+      containers:
+      - name: "quickstart-image-sha256-1"
+        image: "asia-south1-docker.pkg.dev/gnana-abi-test-prj/ag-artifact/quickstart-image@sha256:89766b622582355112374e8c2aea8d250312ebdf78d2d36e9559563bf4f33d1b"
+---
+apiVersion: "autoscaling/v2"
+kind: "HorizontalPodAutoscaler"
+metadata:
+  name: "flask-app-hpa-nxws"
+  namespace: "default"
+  labels:
+    app: "flask-app"
+spec:
+  scaleTargetRef:
+    kind: "Deployment"
+    name: "flask-app"
+    apiVersion: "apps/v1"
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: "Resource"
+    resource:
+      name: "cpu"
+      target:
+        type: "Utilization"
+        averageUtilization: 80
+
