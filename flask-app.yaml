@@ -19,6 +19,10 @@ spec:
       containers:
       - name: "flask-app-image"
         image: "sowndharya1910/flask-image:latest"
+        imagePullPolicy: "Always"
+          ports:
+          - containerPort: 5000
+            name: "flask-app"
 ---
 apiVersion: "autoscaling/v2"
 kind: "HorizontalPodAutoscaler"
