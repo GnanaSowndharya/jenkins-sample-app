@@ -24,25 +24,18 @@ spec:
         - containerPort: 5000
           name: "flask-app"
 ---
-apiVersion: "autoscaling/v2"
-kind: "HorizontalPodAutoscaler"
+apiVersion: "apps/v1"
+kind: "Service"
 metadata:
-  name: "flask-app-hpa-nxws"
-  namespace: "default"
+  name: "flask-app"
   labels:
     app: "flask-app"
 spec:
-  scaleTargetRef:
-    kind: "Deployment"
-    name: "flask-app"
-    apiVersion: "apps/v1"
-  minReplicas: 1
-  maxReplicas: 5
-  metrics:
-  - type: "Resource"
-    resource:
-      name: "cpu"
-      target:
-        type: "Utilization"
-        averageUtilization: 80
+  ports:
+    - port: 5000
+      targetPort: 5000
+  selector:
+    app: "flask-app"
+    tier: "flask-app"
+  type: "LoadBalancer"
 
