@@ -17,8 +17,8 @@ spec:
         app: "flask-app"
     spec:
       containers:
-      - name: "quickstart-image-sha256-1"
-        image: "asia-south1-docker.pkg.dev/gnana-abi-test-prj/ag-artifact/quickstart-image@sha256:89766b622582355112374e8c2aea8d250312ebdf78d2d36e9559563bf4f33d1b"
+      - name: "flask-app-image"
+        image: "sowndharya1910/flask-image:latest"
 ---
 apiVersion: "autoscaling/v2"
 kind: "HorizontalPodAutoscaler"
