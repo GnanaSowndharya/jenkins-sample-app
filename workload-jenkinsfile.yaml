@@ -1,0 +1,58 @@
+podTemplate(yaml: """
+    apiVersion: v1
+    kind: Pod
+    metadata:
+     labels:
+       jenkins: agent
+    spec:
+      serviceAccountName: jenkins-admin
+      nodeSelector:
+        iam.gke.io/gke-metadata-server-enabled: "true"
+      containers:
+      - name: docker
+        image: docker:latest
+        command:
+        - cat
+        tty: true
+        volumeMounts: 
+          - mountPath: /var/run 
+            name: docker-sock 
+            
+      - name: gcloud
+        image: google/cloud-sdk
+        command:
+        - cat
+        tty: true
+        volumeMounts:
+          - mountPath: /var/run
+            name: docker-sock
+      volumes: 
+      - name: docker-sock 
+        hostPath: 
+            path: /var/run
+            """)
+        
+    {
+    node(POD_LABEL) {
+    
+        container('gcloud'){
+            stage('checkout'){
+                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/GnanaSowndharya/jenkins-sample-app']])
+            }
+            stage('checkout'){
+                sh 'apt-get update'
+                sh 'apt-get install docker.io -y'
+                sh 'gcloud auth list'
+                
+            }
+            stage('code build'){
+                sh 'docker build -t us-central1-docker.pkg.dev/gnana-abi-test-prj/gke-jenkins-repo/python-flask-app:lts .'
+                
+            }
+            stage('push'){
+                sh 'gcloud beta auth configure-docker us-central1-docker.pkg.dev'
+                sh 'docker push us-central1-docker.pkg.dev/gnana-abi-test-prj/gke-jenkins-repo/python-flask-app:lts'
+            }
+        }
+    }
+    }
