@@ -1,0 +1,53 @@
+pipeline{
+    
+    agent any
+    
+    environment{
+        
+        PROJECT_ID = 'arch1-test-project'
+        CLUSTER_NAME = 'jenkins-cluster'
+        LOCATION = 'us-central1-c'
+        CREDENTIALS_ID = 'arch1-test-project'
+        dockerImage ='flask-image:latest'
+        registry = 'sowndharya1910/flask-image'
+        registryCredential ='dockerhub'
+        DOCKER_TAG = 'latest'
+        
+    }
+    
+    stages{
+        
+        stage('code checkout'){
+        
+        steps{
+            checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/GnanaSowndharya/jenkins-sample-app']])
+        }
+        }
+        
+        stage('build docker image'){
+            steps{
+                script{
+                    dockerImage = docker.build registry
+                }
+            }
+        }
+        
+        stage('push image to dockerhub'){
+            steps{
+                script{
+                    docker.withRegistry('',registryCredential){
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+        
+         stage('Deploy to GKE') {
+            steps{
+                sh "sed -i 's/flask-image:latest/sowndharya1910:latest/g' flask-app.yaml"
+                step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'flask-app.yaml', credentialsId: env.CREDENTIALS_ID])
+            }
+        }
+        
+    }
+}
